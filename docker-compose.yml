@@ -32,7 +32,7 @@ services:
       - permission_db_data:/var/lib/postgresql/data
 
   snippet_permission:
-    image: snippetpermission-app:latest
+    image: ghcr.io/ingsisahre/snippetpermission-dev:dev
     container_name: snippet_permission
     env_file:
       - env/permission/permission.env
@@ -52,7 +52,7 @@ services:
       - runner_db_data:/var/lib/postgresql/data
 
   snippet_runner:
-    image: snippetrunner-app:latest
+    image: ghcr.io/ingsisahre/snippetrunner-dev:dev
     container_name: snippet_runner
     env_file:
       - env/runner/runner.env
