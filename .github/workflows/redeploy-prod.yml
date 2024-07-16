@@ -23,7 +23,7 @@ jobs:
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan your_dev_vm_ip >> ~/.ssh/known_hosts
+          ssh-keyscan 191.233.252.72 >> ~/.ssh/known_hosts
 
       - name: Redeploy Architecture
         run: |
