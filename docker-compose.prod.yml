@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+## Operations Service ##
+  snippet_operations_db:
+    image: postgres:15.2
+    container_name: snippet_operations_db
+    env_file:
+      - env/operations/operationsdb.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - operations_db_data:/var/lib/postgresql/data
+  snippet_operations:
+    image: ghcr.io/ingsisahre/snippetoperations-prod:prod
+    container_name: snippet_operations
+    env_file:
+      - env/operations/operations.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - snippet_operations_db
+## Permission Service ##
+  snippet_permission_db:
+    image: postgres:15.2
+    container_name: snippet_permission_db
+    env_file:
+      - env/permission/permissiondb.env
+    ports:
+      - "5433:5433"
+    volumes:
+      - permission_db_data:/var/lib/postgresql/data
+
+  snippet_permission:
+    image: ghcr.io/ingsisahre/snippetpermission-prod:prod
+    container_name: snippet_permission
+    env_file:
+      - env/permission/permission.env
+    ports:
+      - "8081:8081"
+    depends_on:
+      - snippet_permission_db
+## Runner Service ##
+  snippet_runner_db:
+    image: postgres:15.2
+    container_name: snippet_runner_db
+    env_file:
+      - env/runner/runnerdb.env
+    ports:
+      - "5434:5434"
+    volumes:
+      - runner_db_data:/var/lib/postgresql/data
+
+  snippet_runner:
+    image: ghcr.io/ingsisahre/snippetrunner-prod:prod
+    container_name: snippet_runner
+    env_file:
+      - env/runner/runner.env
+    ports:
+      - "8082:8082"
+    depends_on:
+      - snippet_runner_db
+
+  api:
+    container_name: "asset_service"
+    image: "ghcr.io/austral-ingsis/snippet-asset-service:latest"
+    ports:
+      - "8083:8083"
+    env_file:
+      - env/asset.env
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: "azurite"
+    hostname: azurite
+    restart: always
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - blob:/workspace
+
+volumes:
+  operations_db_data:
+  permission_db_data:
+  runner_db_data:
+  blob:
+    external: false
+
+

@@ -12,7 +12,7 @@ services:
     volumes:
       - operations_db_data:/var/lib/postgresql/data
   snippet_operations:
-    image: snippetoperations-app:latest
+    image: ghcr.io/ingsisahre/snippetoperations-dev:dev
     container_name: snippet_operations
     env_file:
       - env/operations/operations.env
@@ -61,9 +61,31 @@ services:
     depends_on:
       - snippet_runner_db
 
+  api:
+    container_name: "asset_service"
+    image: "ghcr.io/austral-ingsis/snippet-asset-service:latest"
+    ports:
+      - "8083:8083"
+    env_file:
+      - env/asset.env
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: "azurite"
+    hostname: azurite
+    restart: always
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - blob:/workspace
+
 volumes:
   operations_db_data:
   permission_db_data:
   runner_db_data:
+  blob:
+    external: false
 
 
