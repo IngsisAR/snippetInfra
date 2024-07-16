@@ -1,0 +1,37 @@
+name: Redeploy Architecture
+
+on:
+  push:
+    branches:
+      - main  # O el branch que prefieras para infra
+
+jobs:
+  redeploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan your_dev_vm_ip >> ~/.ssh/known_hosts
+
+      - name: Redeploy Architecture
+        run: |
+          ssh ingsisAHRE@191.233.252.72 << 'EOF'
+            cd snippetInfra
+            sudo su
+            git pull
+            docker-compose -f docker-compose.prod.yml down
+            docker-compose -f docker-compose.prod.yml pull
+            docker-compose -f docker-compose.prod.yml up -d
+          EOF

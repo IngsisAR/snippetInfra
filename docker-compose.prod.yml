@@ -12,7 +12,7 @@ services:
     volumes:
       - operations_db_data:/var/lib/postgresql/data
   snippet_operations:
-    image: ghcr.io/ingsisahre/snippetoperations-prod:prod
+    image: ghcr.io/ingsisahre/snippetoperations-prod:main
     container_name: snippet_operations
     env_file:
       - env/operations/operations.env
@@ -32,7 +32,7 @@ services:
       - permission_db_data:/var/lib/postgresql/data
 
   snippet_permission:
-    image: ghcr.io/ingsisahre/snippetpermission-prod:prod
+    image: ghcr.io/ingsisahre/snippetpermission-prod:main
     container_name: snippet_permission
     env_file:
       - env/permission/permission.env
@@ -52,7 +52,7 @@ services:
 #      - runner_db_data:/var/lib/postgresql/data
 
   snippet_runner:
-    image: ghcr.io/ingsisahre/snippetrunner-prod:prod
+    image: ghcr.io/ingsisahre/snippetrunner-prod:main
     container_name: snippet_runner
     env_file:
       - env/runner/runner.env
