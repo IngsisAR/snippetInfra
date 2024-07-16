@@ -58,8 +58,8 @@ services:
       - env/runner/runner.env
     ports:
       - "8082:8082"
-    depends_on:
-      - snippet_runner_db
+#    depends_on:
+#      - snippet_runner_db
 
   api:
     container_name: "asset_service"
