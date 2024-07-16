@@ -41,15 +41,15 @@ services:
     depends_on:
       - snippet_permission_db
 ## Runner Service ##
-  snippet_runner_db:
-    image: postgres:15.2
-    container_name: snippet_runner_db
-    env_file:
-      - env/runner/runnerdb.env
-    ports:
-      - "5434:5434"
-    volumes:
-      - runner_db_data:/var/lib/postgresql/data
+#  snippet_runner_db:
+#    image: postgres:15.2
+#    container_name: snippet_runner_db
+#    env_file:
+#      - env/runner/runnerdb.env
+#    ports:
+#      - "5434:5434"
+#    volumes:
+#      - runner_db_data:/var/lib/postgresql/data
 
   snippet_runner:
     image: ghcr.io/ingsisahre/snippetrunner-prod:prod
