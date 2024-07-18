@@ -84,7 +84,7 @@ services:
 volumes:
   operations_db_data:
   permission_db_data:
-  runner_db_data:
+#  runner_db_data:
   blob:
     external: false
 
