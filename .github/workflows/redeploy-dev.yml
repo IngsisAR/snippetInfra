@@ -1,4 +1,4 @@
-name: Redeploy Architecture PROD
+name: Redeploy Architecture DEV
 
 on:
   push:
@@ -16,18 +16,18 @@ jobs:
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.SSH_DEV_PRIVATE_KEY }}
 
       - name: Add SSH key
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan ${{ secrets.PROD_IP }} >> ~/.ssh/known_hosts
+          ssh-keyscan ${{ secrets.DEV_IP }} >> ~/.ssh/known_hosts
 
       - name: Redeploy Architecture
         run: |
-          ssh ingsisAHRE@${{ secrets.PROD_IP }} << 'EOF'
+          ssh ingsisAHRE@${{ secrets.DEV_IP }} << 'EOF'
             cd snippetInfra
             sudo su
             git pull
