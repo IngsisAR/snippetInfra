@@ -1,8 +1,8 @@
 version: '3.8'
 
 services:
-## Operations Service ##
-  snippet_operations_db:
+  ## Operations Service ##
+  snippet-operations-db:
     image: postgres:15.2
     container_name: snippet_operations_db
     env_file:
@@ -11,17 +11,21 @@ services:
       - "5432:5432"
     volumes:
       - operations_db_data:/var/lib/postgresql/data
-  snippet_operations:
+  snippet-operations:
     image: ghcr.io/ingsisahre/snippetoperations-prod:main
-    container_name: snippet_operations
+    container_name: snippet-operations
+    environment:
+      NEW_RELIC_APP_NAME: "Snippet Operations Prod"
     env_file:
       - env/operations/operations.env
     ports:
-      - "8080:8080"
+      - "8081:8081"
     depends_on:
-      - snippet_operations_db
-## Permission Service ##
-  snippet_permission_db:
+      - snippet-operations-db
+      - api
+      - redis
+  ## Permission Service ##
+  snippet-permission-db:
     image: postgres:15.2
     container_name: snippet_permission_db
     env_file:
@@ -31,41 +35,35 @@ services:
     volumes:
       - permission_db_data:/var/lib/postgresql/data
 
-  snippet_permission:
+  snippet-permission:
     image: ghcr.io/ingsisahre/snippetpermission-prod:main
-    container_name: snippet_permission
+    container_name: snippet-permission
+    environment:
+      NEW_RELIC_APP_NAME: "Snippet Permissions Prod"
     env_file:
       - env/permission/permission.env
     ports:
-      - "8081:8081"
+      - "8082:8082"
     depends_on:
-      - snippet_permission_db
-## Runner Service ##
-#  snippet_runner_db:
-#    image: postgres:15.2
-#    container_name: snippet_runner_db
-#    env_file:
-#      - env/runner/runnerdb.env
-#    ports:
-#      - "5434:5434"
-#    volumes:
-#      - runner_db_data:/var/lib/postgresql/data
-
-  snippet_runner:
+      - snippet-permission-db
+  ## Runner Service ##
+  snippet-runner:
     image: ghcr.io/ingsisahre/snippetrunner-prod:main
-    container_name: snippet_runner
+    container_name: snippet-runner
+    environment:
+      NEW_RELIC_APP_NAME: "Snippet Runner Prod"
     env_file:
       - env/runner/runner.env
     ports:
-      - "8082:8082"
-#    depends_on:
-#      - snippet_runner_db
+      - "8083:8083"
 
   api:
-    container_name: "asset_service"
+    container_name: asset-service
     image: "ghcr.io/austral-ingsis/snippet-asset-service:latest"
     ports:
-      - "8083:8083"
+      - "8080:8080"
+    environment:
+      NEW_RELIC_AGENT_ENABLED: false
     env_file:
       - env/asset.env
 
@@ -81,11 +79,14 @@ services:
     volumes:
       - blob:/workspace
 
+  redis:
+    container_name: "snippet-redis"
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"
+
 volumes:
   operations_db_data:
   permission_db_data:
-#  runner_db_data:
   blob:
     external: false
-
-

@@ -1,87 +1,71 @@
 version: '3.8'
 
 services:
-## Operations Service ##
-  snippet_operations_db:
+  ## Operations Service ##
+  snippet-operations-db:
     image: postgres:15.2
     container_name: snippet_operations_db
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${OPERATIONS_POSTGRES_DB}
-      PGPORT: ${OPERATIONS_PGPORT}
     env_file:
-      - .env
+      - env/operations/operationsdb.env
     ports:
       - "5432:5432"
     volumes:
       - operations_db_data:/var/lib/postgresql/data
-  snippet_operations:
+  snippet-operations:
     image: ghcr.io/ingsisahre/snippetoperations-dev:dev
-    container_name: snippet_operations
+    container_name: snippet-operations
     environment:
-      DATABASE_URL: ${OPERATIONS_DATABASE_URL}
-      DATABASE_PORT: ${OPERATIONS_PGPORT}
-      PORT: ${OPERATIONS_PORT}
       NEW_RELIC_APP_NAME: "Snippet Operations Dev"
     env_file:
-      - .env
+      - env/operations/operations.env
     ports:
       - "8081:8081"
     depends_on:
-      - snippet_operations_db
-## Permission Service ##
-  snippet_permission_db:
+      - snippet-operations-db
+      - api
+      - redis
+  ## Permission Service ##
+  snippet-permission-db:
     image: postgres:15.2
     container_name: snippet_permission_db
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${PERMISSION_POSTGRES_DB}
-      PGPORT: ${PERMISSION_PGPORT}
     env_file:
-      - .env
+      - env/permission/permissiondb.env
     ports:
       - "5433:5433"
     volumes:
       - permission_db_data:/var/lib/postgresql/data
 
-  snippet_permission:
+  snippet-permission:
     image: ghcr.io/ingsisahre/snippetpermission-dev:dev
-    container_name: snippet_permission
+    container_name: snippet-permission
     environment:
-      DATABASE_URL: ${PERMISSION_DATABASE_URL}
-      DATABASE_NAME: ${PERMISSION_POSTGRES_DB}
-      DATABASE_PORT: ${PERMISSION_PGPORT}
-      PORT: ${PERMISSION_PORT}
       NEW_RELIC_APP_NAME: "Snippet Permissions Dev"
     env_file:
-      - .env
+      - env/permission/permission.env
     ports:
       - "8082:8082"
     depends_on:
-      - snippet_permission_db
-
-  snippet_runner:
+      - snippet-permission-db
+  ## Runner Service ##
+  snippet-runner:
     image: ghcr.io/ingsisahre/snippetrunner-dev:dev
-    container_name: snippet_runner
+    container_name: snippet-runner
     environment:
-      PORT: ${RUNNER_PORT}
       NEW_RELIC_APP_NAME: "Snippet Runner Dev"
     env_file:
-      - .env
+      - env/runner/runner.env
     ports:
       - "8083:8083"
 
   api:
-    container_name: "asset_service"
+    container_name: asset-service
     image: "ghcr.io/austral-ingsis/snippet-asset-service:latest"
     ports:
       - "8080:8080"
     environment:
-      NEW_RELIC_APP_NAME: "Snippet Permissions Dev"
+      NEW_RELIC_AGENT_ENABLED: false
     env_file:
-      - .env
+      - env/asset.env
 
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
@@ -96,7 +80,7 @@ services:
       - blob:/workspace
 
   redis:
-    container_name: "snippet_redis"
+    container_name: "snippet-redis"
     image: redis:6-alpine
     ports:
       - "6379:6379"
@@ -106,5 +90,3 @@ volumes:
   permission_db_data:
   blob:
     external: false
-
-
