@@ -1,6 +1,44 @@
 version: '3.8'
 
 services:
+  proxy:
+    container_name: "reverse-proxy"
+    image: nginx
+    ports:
+      - "8085:80"
+      - "443:443"
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d:ro
+      - ./certs:/etc/letsencrypt
+      - ./www:/var/www/certbot
+    depends_on:
+      - snippet-permission
+      - snippet-permission-db
+      - snippet-operations
+      - snippet-operations-db
+      - snippet-runner
+
+  duckdns:
+    image: maksimstojkovic/duckdns
+    container_name: duckdns
+    env_file:
+      - env/duckdns.env
+    environment:
+      - DUCKDNS_DOMAIN=ingsisahredev.duckdns.org
+    restart: unless-stopped
+
+  letsencrypt:
+    image: maksimstojkovic/letsencrypt
+    container_name: letsencrypt
+    volumes:
+      - ./certs:/etc/letsencrypt
+    env_file:
+      - env/duckdns.env
+    environment:
+      - DUCKDNS_DOMAIN=ingsisahredev.duckdns.org
+      - LETSENCRYPT_EMAIL=braian.rios@ing.austral.edu.ar
+    restart: unless-stopped
+
   ## Operations Service ##
   snippet-operations-db:
     image: postgres:15.2
