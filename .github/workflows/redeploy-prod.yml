@@ -3,7 +3,7 @@ name: Redeploy Architecture PROD
 on:
   push:
     branches:
-      - main  # O el branch que prefieras para infra
+      - main
 
 jobs:
   redeploy:

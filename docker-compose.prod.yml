@@ -12,7 +12,7 @@ services:
     volumes:
       - operations_db_data:/var/lib/postgresql/data
   snippet-operations:
-    image: ghcr.io/ingsisahre/snippetoperations-prod:main
+    image: ghcr.io/ingsisar/snippetoperations-prod:main
     container_name: snippet-operations
     environment:
       NEW_RELIC_APP_NAME: "Snippet Operations Prod"
@@ -36,7 +36,7 @@ services:
       - permission_db_data:/var/lib/postgresql/data
 
   snippet-permission:
-    image: ghcr.io/ingsisahre/snippetpermission-prod:main
+    image: ghcr.io/ingsisar/snippetpermission-prod:main
     container_name: snippet-permission
     environment:
       NEW_RELIC_APP_NAME: "Snippet Permissions Prod"
@@ -48,7 +48,7 @@ services:
       - snippet-permission-db
   ## Runner Service ##
   snippet-runner:
-    image: ghcr.io/ingsisahre/snippetrunner-prod:main
+    image: ghcr.io/ingsisar/snippetrunner-prod:main
     container_name: snippet-runner
     environment:
       NEW_RELIC_APP_NAME: "Snippet Runner Prod"
@@ -57,7 +57,7 @@ services:
     ports:
       - "8083:8083"
 
-  api:
+  asset-service:
     container_name: asset-service
     image: "ghcr.io/austral-ingsis/snippet-asset-service:latest"
     ports:
