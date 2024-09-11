@@ -22,8 +22,10 @@ services:
       - "8081:8081"
     depends_on:
       - snippet-operations-db
-      - api
+      - asset-service
       - redis
+      - snippet-runner
+      - snippet-permission
   ## Permission Service ##
   snippet-permission-db:
     image: postgres:15.2
@@ -70,14 +72,13 @@ services:
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
     container_name: "azurite"
-    hostname: azurite
     restart: always
     ports:
       - "10000:10000"
       - "10001:10001"
       - "10002:10002"
     volumes:
-      - blob:/workspace
+      - azurite_volume:/workspace
 
   redis:
     container_name: "snippet-redis"
@@ -88,5 +89,4 @@ services:
 volumes:
   operations_db_data:
   permission_db_data:
-  blob:
-    external: false
+  azurite_volume:
