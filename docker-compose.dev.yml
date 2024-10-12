@@ -3,6 +3,7 @@ version: '3.8'
 services:
   UI-reverse-proxy:
     image: ghcr.io/ingsisar/printscript-ui-dev:dev
+    container_name: UI-reverse-proxy
     ports:
       - "80:80"
       - "443:443"
@@ -104,7 +105,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      NEW_RELIC_AGENT_ENABLED: false
+      NEW_RELIC_AGENT_ENABLED: "false"
     env_file:
       - env/asset.env
 
