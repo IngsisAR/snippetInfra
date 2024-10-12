@@ -1,10 +1,49 @@
 version: '3.8'
 
 services:
+  UI-reverse-proxy:
+    image: ghcr.io/ingsisar/printscript-ui-prod:main
+    ports:
+      - "80:80"
+      - "443:443"
+    env_file:
+      - env/ui/.env
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d:ro
+      - ./certs:/etc/letsencrypt
+    depends_on:
+      - snippet-permission
+      - snippet-permission-db
+      - snippet-operations
+      - snippet-operations-db
+      - snippet-runner
+      - letsencrypt
+
+  duckdns:
+    image: maksimstojkovic/duckdns
+    container_name: duckdns
+    env_file:
+      - env/duckdns.env
+    environment:
+      - DUCKDNS_DOMAIN=ingsisar.duckdns.org
+    restart: unless-stopped
+
+  letsencrypt:
+    image: maksimstojkovic/letsencrypt
+    container_name: letsencrypt
+    volumes:
+      - ./certs:/etc/letsencrypt
+    env_file:
+      - env/duckdns.env
+    environment:
+      - DUCKDNS_DOMAIN=ingsisar.duckdns.org
+      - LETSENCRYPT_EMAIL=braian.rios@ing.austral.edu.ar
+    restart: unless-stopped
+
   ## Operations Service ##
   snippet-operations-db:
     image: postgres:15.2
-    container_name: snippet_operations_db
+    container_name: snippet-operations-db
     env_file:
       - env/operations/operationsdb.env
     ports:
@@ -29,7 +68,7 @@ services:
   ## Permission Service ##
   snippet-permission-db:
     image: postgres:15.2
-    container_name: snippet_permission_db
+    container_name: snippet-permission-db
     env_file:
       - env/permission/permissiondb.env
     ports:
@@ -71,8 +110,8 @@ services:
 
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
-    container_name: "azurite"
-    restart: always
+    container_name: azurite
+    restart: unless-stopped
     ports:
       - "10000:10000"
       - "10001:10001"
@@ -81,7 +120,7 @@ services:
       - azurite_volume:/workspace
 
   redis:
-    container_name: "snippet-redis"
+    container_name: snippet-redis
     image: redis:6-alpine
     ports:
       - "6379:6379"
