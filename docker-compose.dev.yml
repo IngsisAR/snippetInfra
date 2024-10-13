@@ -7,10 +7,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    env_file:
-      - env/ui/.env
-    environment:
-      - VITE_FRONTEND_URL=https://ingsisar-dev.duckdns.org/
     volumes:
       - ./conf.d.dev:/etc/nginx/conf.d:ro
       - ./certs.dev:/etc/letsencrypt
