@@ -9,6 +9,8 @@ services:
       - "443:443"
     env_file:
       - env/ui/.env
+    environment:
+      - VITE_FRONTEND_URL=https://ingsisar-dev.duckdns.org/
     volumes:
       - ./conf.d.dev:/etc/nginx/conf.d:ro
       - ./certs.dev:/etc/letsencrypt
@@ -55,7 +57,8 @@ services:
     image: ghcr.io/ingsisar/snippetoperations-dev:dev
     container_name: snippet-operations
     environment:
-      NEW_RELIC_APP_NAME: "Snippet Operations Dev"
+      - NEW_RELIC_APP_NAME="Snippet Operations Dev"
+      - UI_URL=https://ingsisar-dev.duckdns.org
     env_file:
       - env/operations/operations.env
     ports:
@@ -93,7 +96,8 @@ services:
     image: ghcr.io/ingsisar/snippetrunner-dev:dev
     container_name: snippet-runner
     environment:
-      NEW_RELIC_APP_NAME: "Snippet Runner Dev"
+      - NEW_RELIC_APP_NAME="Snippet Runner Dev"
+      - UI_URL=https://ingsisar-dev.duckdns.org
     env_file:
       - env/runner/runner.env
     ports:
