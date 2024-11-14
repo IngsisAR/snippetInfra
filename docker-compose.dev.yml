@@ -1,22 +1,23 @@
 version: '3.8'
 
 services:
-  proxy:
-    container_name: "reverse-proxy"
-    image: nginx
+  UI-reverse-proxy:
+    image: ghcr.io/ingsisar/printscript-ui-dev:dev
+    container_name: UI-reverse-proxy
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./conf.d:/etc/nginx/conf.d:ro
-      - ./certs:/etc/letsencrypt
-      - ./www:/var/www/certbot
+      - ./conf.d.dev:/etc/nginx/conf.d:ro
+      - ./certs.dev:/etc/letsencrypt
     depends_on:
       - snippet-permission
       - snippet-permission-db
       - snippet-operations
       - snippet-operations-db
       - snippet-runner
+      - letsencrypt
+    restart: unless-stopped
 
   duckdns:
     image: maksimstojkovic/duckdns
@@ -24,36 +25,39 @@ services:
     env_file:
       - env/duckdns.env
     environment:
-      - DUCKDNS_DOMAIN=ingsisar-dev.duckdns.org
+      DUCKDNS_DOMAIN: ingsisar-dev.duckdns.org
     restart: unless-stopped
 
   letsencrypt:
     image: maksimstojkovic/letsencrypt
     container_name: letsencrypt
     volumes:
-      - ./certs:/etc/letsencrypt
+      - ./certs.dev:/etc/letsencrypt
     env_file:
       - env/duckdns.env
     environment:
-      - DUCKDNS_DOMAIN=ingsisar-dev.duckdns.org
-      - LETSENCRYPT_EMAIL=braian.rios@ing.austral.edu.ar
+      DUCKDNS_DOMAIN: ingsisar-dev.duckdns.org
+      LETSENCRYPT_EMAIL: braian.rios@ing.austral.edu.ar
     restart: unless-stopped
 
   ## Operations Service ##
   snippet-operations-db:
     image: postgres:15.2
-    container_name: snippet_operations_db
+    container_name: snippet-operations-db
     env_file:
       - env/operations/operationsdb.env
     ports:
       - "5432:5432"
     volumes:
       - operations_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
   snippet-operations:
     image: ghcr.io/ingsisar/snippetoperations-dev:dev
     container_name: snippet-operations
     environment:
       NEW_RELIC_APP_NAME: "Snippet Operations Dev"
+      UI_URL: https://ingsisar-dev.duckdns.org
     env_file:
       - env/operations/operations.env
     ports:
@@ -64,16 +68,19 @@ services:
       - redis
       - snippet-runner
       - snippet-permission
+    restart: unless-stopped
+
   ## Permission Service ##
   snippet-permission-db:
     image: postgres:15.2
-    container_name: snippet_permission_db
+    container_name: snippet-permission-db
     env_file:
       - env/permission/permissiondb.env
     ports:
       - "5433:5433"
     volumes:
       - permission_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
 
   snippet-permission:
     image: ghcr.io/ingsisar/snippetpermission-dev:dev
@@ -86,31 +93,36 @@ services:
       - "8082:8082"
     depends_on:
       - snippet-permission-db
+    restart: unless-stopped
+
   ## Runner Service ##
   snippet-runner:
     image: ghcr.io/ingsisar/snippetrunner-dev:dev
     container_name: snippet-runner
     environment:
       NEW_RELIC_APP_NAME: "Snippet Runner Dev"
+      UI_URL: https://ingsisar-dev.duckdns.org
     env_file:
       - env/runner/runner.env
     ports:
       - "8083:8083"
+    restart: unless-stopped
 
   asset-service:
     container_name: asset-service
-    image: "ghcr.io/austral-ingsis/snippet-asset-service:latest"
+    image: ghcr.io/austral-ingsis/snippet-asset-service:latest
     ports:
       - "8080:8080"
     environment:
-      NEW_RELIC_AGENT_ENABLED: false
+      NEW_RELIC_AGENT_ENABLED: "true"
     env_file:
       - env/asset.env
+    restart: unless-stopped
 
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
-    container_name: "azurite"
-    restart: always
+    container_name: azurite
+    restart: unless-stopped
     ports:
       - "10000:10000"
       - "10001:10001"
@@ -119,10 +131,11 @@ services:
       - azurite_volume:/workspace
 
   redis:
-    container_name: "snippet-redis"
+    container_name: snippet-redis
     image: redis:6-alpine
     ports:
       - "6379:6379"
+    restart: unless-stopped
 
 volumes:
   operations_db_data:

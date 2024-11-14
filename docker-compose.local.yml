@@ -1,45 +1,6 @@
 version: '3.8'
 
 services:
-  UI-reverse-proxy:
-    image: ghcr.io/ingsisar/printscript-ui-prod:main
-    container_name: UI-reverse-proxy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./conf.d:/etc/nginx/conf.d:ro
-      - ./certs:/etc/letsencrypt
-    depends_on:
-      - snippet-permission
-      - snippet-permission-db
-      - snippet-operations
-      - snippet-operations-db
-      - snippet-runner
-      - letsencrypt
-    restart: unless-stopped
-
-  duckdns:
-    image: maksimstojkovic/duckdns
-    container_name: duckdns
-    env_file:
-      - env/duckdns.env
-    environment:
-      DUCKDNS_DOMAIN: ingsisar.duckdns.org
-    restart: unless-stopped
-
-  letsencrypt:
-    image: maksimstojkovic/letsencrypt
-    container_name: letsencrypt
-    volumes:
-      - ./certs:/etc/letsencrypt
-    env_file:
-      - env/duckdns.env
-    environment:
-      DUCKDNS_DOMAIN: ingsisar.duckdns.org
-      LETSENCRYPT_EMAIL: braian.rios@ing.austral.edu.ar
-    restart: unless-stopped
-
   ## Operations Service ##
   snippet-operations-db:
     image: postgres:15.2
@@ -50,14 +11,13 @@ services:
       - "5432:5432"
     volumes:
       - operations_db_data:/var/lib/postgresql/data
-    restart: unless-stopped
 
   snippet-operations:
-    image: ghcr.io/ingsisar/snippetoperations-prod:main
+    image: ghcr.io/ingsisar/snippetoperations-dev:dev
     container_name: snippet-operations
     environment:
-      NEW_RELIC_APP_NAME: "Snippet Operations Prod"
-      UI_URL: https://ingsisar.duckdns.org
+      NEW_RELIC_APP_NAME: "Snippet Operations Dev"
+      UI_URL: http://localhost:5173
     env_file:
       - env/operations/operations.env
     ports:
@@ -68,7 +28,6 @@ services:
       - redis
       - snippet-runner
       - snippet-permission
-    restart: unless-stopped
 
   ## Permission Service ##
   snippet-permission-db:
@@ -80,33 +39,30 @@ services:
       - "5433:5433"
     volumes:
       - permission_db_data:/var/lib/postgresql/data
-    restart: unless-stopped
 
   snippet-permission:
-    image: ghcr.io/ingsisar/snippetpermission-prod:main
+    image: ghcr.io/ingsisar/snippetpermission-dev:dev
     container_name: snippet-permission
     environment:
-      NEW_RELIC_APP_NAME: "Snippet Permissions Prod"
+      NEW_RELIC_APP_NAME: "Snippet Permissions Dev"
     env_file:
       - env/permission/permission.env
     ports:
       - "8082:8082"
     depends_on:
       - snippet-permission-db
-    restart: unless-stopped
 
   ## Runner Service ##
   snippet-runner:
-    image: ghcr.io/ingsisar/snippetrunner-prod:main
+    image: ghcr.io/ingsisar/snippetrunner-dev:dev
     container_name: snippet-runner
     environment:
-      NEW_RELIC_APP_NAME: "Snippet Runner Prod"
-      UI_URL: https://ingsisar.duckdns.org
+      NEW_RELIC_APP_NAME: "Snippet Runner Dev"
+      UI_URL: http://localhost:5173
     env_file:
       - env/runner/runner.env
     ports:
       - "8083:8083"
-    restart: unless-stopped
 
   asset-service:
     container_name: asset-service
@@ -117,7 +73,6 @@ services:
       NEW_RELIC_AGENT_ENABLED: "true"
     env_file:
       - env/asset.env
-    restart: unless-stopped
 
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
@@ -135,7 +90,6 @@ services:
     image: redis:6-alpine
     ports:
       - "6379:6379"
-    restart: unless-stopped
 
 volumes:
   operations_db_data:
